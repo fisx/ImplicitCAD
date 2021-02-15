@@ -1,17 +1,17 @@
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase   #-}
+{-# LANGUAGE LambdaCase #-}
 
 module GoldenSpec.Util (golden) where
 
 import Control.Monad.IO.Class (liftIO)
 import Graphics.Implicit (SymbolicObj3, writeSTL)
-import Prelude (IO, FilePath, Bool (True, False), String, Double, pure, (==), readFile, writeFile, (>>=), (<>), ($))
-import System.Directory (getTemporaryDirectory, doesFileExist)
+import System.Directory (doesFileExist, getTemporaryDirectory)
 import System.IO (hClose, openTempFile)
-import Test.Hspec (it, shouldBe, SpecWith)
-
+import Test.Hspec (SpecWith, it, shouldBe)
+import Prelude (Bool (False, True), Double, FilePath, IO, String, pure, readFile, writeFile, ($), (<>), (==), (>>=))
 
 ------------------------------------------------------------------------------
+
 -- | Construct a golden test for rendering the given 'SymbolicObj3' at the
 -- specified resolution. On the first run of this test, it will render the
 -- object and cache the results. Subsequent test runs will compare their result
@@ -31,7 +31,7 @@ golden name resolution sym = it (name <> " (golden)") $ do
     let golden_fp = "./tests/golden/" <> name <> ".stl"
     -- Check if the cached results already exist.
     doesFileExist golden_fp >>= \case
-      True  -> pure ()
+      True -> pure ()
       -- If not, save the mesh we just created in the cache.
       False -> writeFile golden_fp res
     !cached <- readFile golden_fp
@@ -41,13 +41,14 @@ golden name resolution sym = it (name <> " (golden)") $ do
     then pure ()
     else False `shouldBe` True
 
-
 ------------------------------------------------------------------------------
+
 -- | Get a temporary filepath with the desired extension. On unix systems, this
 -- is a file under @/tmp@. Useful for tests that need to write files.
-getTemporaryFilePath
-    :: String  -- ^ File extension
-    -> IO FilePath
+getTemporaryFilePath ::
+  -- | File extension
+  String ->
+  IO FilePath
 getTemporaryFilePath ext = do
   tempdir <- getTemporaryDirectory
   -- The only means available to us for getting a temporary filename also opens
@@ -56,4 +57,3 @@ getTemporaryFilePath ext = do
   (fp, h) <- openTempFile tempdir "implicit-golden"
   hClose h
   pure $ fp <> "." <> ext
-

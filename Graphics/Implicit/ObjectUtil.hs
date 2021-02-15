@@ -4,12 +4,9 @@
 
 -- create a module that just wraps the functions in the ObjectUtil directory.
 
-module Graphics.Implicit.ObjectUtil(getImplicit3, getImplicit2, getBox3, getBox2) where
-
-import Graphics.Implicit.ObjectUtil.GetImplicit3 (getImplicit3)
-
-import Graphics.Implicit.ObjectUtil.GetImplicit2 (getImplicit2)
-
-import Graphics.Implicit.ObjectUtil.GetBox3 (getBox3)
+module Graphics.Implicit.ObjectUtil (getImplicit3, getImplicit2, getBox3, getBox2) where
 
 import Graphics.Implicit.ObjectUtil.GetBox2 (getBox2)
+import Graphics.Implicit.ObjectUtil.GetBox3 (getBox3)
+import Graphics.Implicit.ObjectUtil.GetImplicit2 (getImplicit2)
+import Graphics.Implicit.ObjectUtil.GetImplicit3 (getImplicit3)

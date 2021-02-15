@@ -1,40 +1,36 @@
+-- Allow us to use string literals for Text
+{-# LANGUAGE OverloadedStrings #-}
 -- Implicit CAD. Copyright (C) 2011, Christopher Olah (chris@colah.ca)
 -- Copyright (C) 2014-2017, Julia Longtin (julial@turinglace.com)
 -- Released under the GNU AGPLV3+, see LICENSE
-
 -- Allow us to use shorter forms of Var and Name.
 {-# LANGUAGE PatternSynonyms #-}
-
--- Allow us to use string literals for Text
-{-# LANGUAGE OverloadedStrings #-}
 
 module ParserSpec.Expr (exprSpec) where
 
 -- Be explicit about what we import.
-import Prelude (Bool(True, False), ($))
 
 -- Hspec, for writing specs.
-import Test.Hspec (describe, Expectation, Spec, it, pendingWith, specify)
 
 import Data.Text.Lazy (Text)
-
 -- Parsed expression components.
-import Graphics.Implicit.ExtOpenScad.Definitions (Expr(ListE, (:$)), Symbol(Symbol))
-
-import qualified Graphics.Implicit.ExtOpenScad.Definitions as GIED (Expr(Var), Pattern(Name))
 
 -- The type used for variables, in ImplicitCAD.
 import Graphics.Implicit.Definitions (ℝ)
-
+import Graphics.Implicit.ExtOpenScad.Definitions (Expr (ListE, (:$)), Symbol (Symbol))
+import qualified Graphics.Implicit.ExtOpenScad.Definitions as GIED (Expr (Var), Pattern (Name))
 -- Our utility library, for making these tests easier to read.
-import ParserSpec.Util ((-->), fapp, num, bool, stringLiteral, undefined, plus, minus, mult, power, divide, negate, and, or, not, gt, ternary, append, index, lambda)
+import ParserSpec.Util (and, append, bool, divide, fapp, gt, index, lambda, minus, mult, negate, not, num, or, plus, power, stringLiteral, ternary, undefined, (-->))
+import Test.Hspec (Expectation, Spec, describe, it, pendingWith, specify)
+import Prelude (Bool (False, True), ($))
 
 -- Default all numbers in this file to being of the type ImplicitCAD uses for values.
 default (ℝ)
 
 -- Let us use the old syntax when defining Vars and Names.
 pattern Var :: Text -> Expr
-pattern Var  s = GIED.Var  (Symbol s)
+pattern Var s = GIED.Var (Symbol s)
+
 pattern Name :: Text -> GIED.Pattern
 pattern Name n = GIED.Name (Symbol n)
 
@@ -58,11 +54,11 @@ logicalSpec = do
     specify "with comparison in head position" $
       "1 > 0 ? 5 : -5" --> ternary [gt [num 1, num 0], num 5, num (-5)]
     specify "with comparison in head position, and addition in tail" $
-      "1 > 0 ? 5 : 1 + 2" -->
-              ternary [gt [num 1, num 0], num 5, plus [num 1, num 2]]
+      "1 > 0 ? 5 : 1 + 2"
+        --> ternary [gt [num 1, num 0], num 5, plus [num 1, num 2]]
     specify "nested in true and false expressions" $
-      "c0 ? c1 ? t1 : f1 : c2 ? t2 : f2" -->
-      ternary [Var "c0", ternary [Var "c1",Var "t1",Var "f1"], ternary [Var "c2",Var "t2",Var "f2"]]
+      "c0 ? c1 ? t1 : f1 : c2 ? t2 : f2"
+        --> ternary [Var "c0", ternary [Var "c1", Var "t1", Var "f1"], ternary [Var "c2", Var "t2", Var "f2"]]
 
 literalSpec :: Spec
 literalSpec = do
@@ -127,14 +123,14 @@ exprSpec = do
     it "handles lists" $
       "( 1, 2, 3 )" --> ListE [num 1, num 2, num 3]
     it "handles generators" $
-      "[ a : b ]" -->
-      fapp "list_gen" [Var "a", num 1, Var "b"]
+      "[ a : b ]"
+        --> fapp "list_gen" [Var "a", num 1, Var "b"]
     it "handles generators with expression" $
-      "[ a : b + 10 ]" -->
-      fapp "list_gen" [Var "a", num 1, plus [Var "b", num 10]]
+      "[ a : b + 10 ]"
+        --> fapp "list_gen" [Var "a", num 1, plus [Var "b", num 10]]
     it "handles increment generators" $
-      "[ a : 3 : b + 10 ]" -->
-      fapp "list_gen" [Var "a", num 3, plus [Var "b", num 10]]
+      "[ a : 3 : b + 10 ]"
+        --> fapp "list_gen" [Var "a", num 3, plus [Var "b", num 10]]
     it "handles indexing" $
       "foo[23]" --> index [Var "foo", num 23]
     it "handles multiple indexes" $
@@ -153,7 +149,7 @@ exprSpec = do
     it "handles unary + with extra spaces" $
       "+  42" --> num 42
     it "handles unary - with parentheses" $
-      "-(4 - 3)" --> negate [ minus [num 4, num 3]]
+      "-(4 - 3)" --> negate [minus [num 4, num 3]]
     it "handles unary + with parentheses" $
       "+(4 - 1)" --> minus [num 4, num 1]
     it "handles unary - with identifier" $
@@ -173,7 +169,7 @@ exprSpec = do
     it "handles +/- in combination" $ do
       "1 + 2 - 3" --> minus [plus [num 1, num 2], num 3]
       "2 - 3 + 4" --> plus [minus [num 2, num 3], num 4]
-      "1 + 2 - 3 + 4" --> plus [minus [ plus [num 1, num 2], num 3], num 4]
+      "1 + 2 - 3 + 4" --> plus [minus [plus [num 1, num 2], num 3], num 4]
       "1 + 2 - 3 + 4 - 5 - 6" --> minus [minus [plus [minus [plus [num 1, num 2], num 3], num 4], num 5], num 6]
     it "handles exponentiation" $
       "x ^ y" --> power [Var "x", Var "y"]

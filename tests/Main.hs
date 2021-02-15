@@ -3,28 +3,26 @@
 -- Released under the GNU AGPLV3+, see LICENSE
 
 -- be explicit about what we import.
-import Prelude (($), IO)
 
 -- our testing engine.
-import Test.Hspec(hspec, describe)
 
 -- the parser test for statements.
-import ParserSpec.Statement(statementSpec)
 
 -- the parser test for expressions.
-import ParserSpec.Expr(exprSpec)
 
 -- the execution test for expressions.
-import ExecSpec.Expr(exprExec)
-
+import ExecSpec.Expr (exprExec)
 -- the execution test for warnings.
-import MessageSpec.Message(programExec)
-
-import PropertySpec (propSpec)
 
 import qualified GoldenSpec.Spec as Golden
 import qualified ImplicitSpec as Implicit
+import MessageSpec.Message (programExec)
+import ParserSpec.Expr (exprSpec)
+import ParserSpec.Statement (statementSpec)
+import PropertySpec (propSpec)
 import qualified TesselationSpec as Tesselation
+import Test.Hspec (describe, hspec)
+import Prelude (IO, ($))
 
 main :: IO ()
 main = hspec $ do
@@ -44,4 +42,3 @@ main = hspec $ do
 
   Implicit.spec
   Tesselation.spec
-

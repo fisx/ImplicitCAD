@@ -5,21 +5,20 @@
 
 -- Utilities
 module MessageSpec.Util
-       ( (-->)
-       , oneMessage
-       ) where
+  ( (-->),
+    oneMessage,
+  )
+where
 
 -- be explicit about where we get things from.
-import Prelude (String, Bool(False), IO, return)
 
 -- Expressions, symbols, and values in the OpenScad language.
-import Graphics.Implicit.ExtOpenScad.Definitions (ScadOpts(ScadOpts), MessageType, Message(Message), SourcePosition)
-
-import Graphics.Implicit.ExtOpenScad (runOpenscad)
-
-import Test.Hspec (Expectation, shouldReturn)
 
 import Data.Text.Lazy (Text)
+import Graphics.Implicit.ExtOpenScad (runOpenscad)
+import Graphics.Implicit.ExtOpenScad.Definitions (Message (Message), MessageType, ScadOpts (ScadOpts), SourcePosition)
+import Test.Hspec (Expectation, shouldReturn)
+import Prelude (Bool (False), IO, String, return)
 
 -- | decide what options to send to the scad engine.
 generateScadOpts :: ScadOpts
@@ -30,18 +29,20 @@ generateScadOpts = ScadOpts compat_flag import_flag
 
 -- An operator for expressions for "the left side should evaluate to the right side."
 infixr 1 -->
+
 (-->) :: String -> [Message] -> Expectation
 (-->) source value =
   getOpenscadMessages scadOptions [] source `shouldReturn` value
   where
     scadOptions = generateScadOpts
+
 -- | Types
 
 -- | An even smaller wrapper which runs a program, and only returns the generated messages. for the test suite.
-getOpenscadMessages ::  ScadOpts -> [String] -> String -> IO [Message]
+getOpenscadMessages :: ScadOpts -> [String] -> String -> IO [Message]
 getOpenscadMessages scadOpts constants source = do
-    (_, _, _, messages) <- runOpenscad scadOpts constants source
-    return messages
+  (_, _, _, messages) <- runOpenscad scadOpts constants source
+  return messages
 
 oneMessage :: MessageType -> SourcePosition -> Text -> [Message]
 oneMessage msgType pos text = [Message msgType pos text]

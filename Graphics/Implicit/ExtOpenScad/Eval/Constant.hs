@@ -4,47 +4,33 @@
 
 module Graphics.Implicit.ExtOpenScad.Eval.Constant (addConstants, runExpr) where
 
-import Prelude (String, IO, ($), pure, (+), Either,  Bool(False), (.), either, (<$>), (<*), (<*>))
-
-import Data.Foldable (traverse_, foldlM)
-
-import Graphics.Implicit.Definitions (Fastℕ)
-
-import Graphics.Implicit.ExtOpenScad.Definitions (
-                                                  Pattern,
-                                                  Expr,
-                                                  VarLookup,
-                                                  Message(Message),
-                                                  MessageType(SyntaxError),
-                                                  StateC,
-                                                  ScadOpts(ScadOpts),
-                                                  CompState(CompState, scadVars, messages),
-                                                  SourcePosition(SourcePosition),
-                                                  OVal(OUndefined),
-                                                  varUnion
-                                                 )
-
-import Graphics.Implicit.ExtOpenScad.Util.StateC (modifyVarLookup, addMessage)
-
-import Graphics.Implicit.ExtOpenScad.Parser.Expr (expr0)
-
-import Graphics.Implicit.ExtOpenScad.Eval.Expr (evalExpr, matchPat, rawRunExpr)
-
-import Graphics.Implicit.ExtOpenScad.Default (defaultObjects)
-
 import Control.Monad.State (liftIO, runStateT, (>>=))
-
-import System.Directory (getCurrentDirectory)
-
-import Text.Parsec (SourceName, parse, ParseError)
-
-import Text.Parsec.Error (errorMessages, showErrorMessages)
-
+import Data.Foldable (foldlM, traverse_)
 import Data.Text.Lazy (pack)
-
-import Graphics.Implicit.ExtOpenScad.Parser.Util (patternMatcher)
-
+import Graphics.Implicit.Definitions (Fastℕ)
+import Graphics.Implicit.ExtOpenScad.Default (defaultObjects)
+import Graphics.Implicit.ExtOpenScad.Definitions
+  ( CompState (CompState, messages, scadVars),
+    Expr,
+    Message (Message),
+    MessageType (SyntaxError),
+    OVal (OUndefined),
+    Pattern,
+    ScadOpts (ScadOpts),
+    SourcePosition (SourcePosition),
+    StateC,
+    VarLookup,
+    varUnion,
+  )
+import Graphics.Implicit.ExtOpenScad.Eval.Expr (evalExpr, matchPat, rawRunExpr)
+import Graphics.Implicit.ExtOpenScad.Parser.Expr (expr0)
 import Graphics.Implicit.ExtOpenScad.Parser.Lexer (matchTok)
+import Graphics.Implicit.ExtOpenScad.Parser.Util (patternMatcher)
+import Graphics.Implicit.ExtOpenScad.Util.StateC (addMessage, modifyVarLookup)
+import System.Directory (getCurrentDirectory)
+import Text.Parsec (ParseError, SourceName, parse)
+import Text.Parsec.Error (errorMessages, showErrorMessages)
+import Prelude (Bool (False), Either, IO, String, either, pure, ($), (+), (.), (<$>), (<*), (<*>))
 
 -- | Define variables used during the extOpenScad run.
 addConstants :: [String] -> Bool -> IO (VarLookup, [Message])
@@ -71,8 +57,8 @@ addConstants constants withCSG = do
 runExpr :: String -> Bool -> (OVal, [Message])
 runExpr expression withCSG = do
   either oUndefined run $ parse expr0 "raw_expression" expression
-    where
-      run expr = rawRunExpr initPos (defaultObjects withCSG) expr
-      initPos = SourcePosition 1 1 "raw_expression"
-      show' = showErrorMessages "or" "unknown parse error" "expecting" "unexpected" "end of input" . errorMessages
-      oUndefined e = (OUndefined, [Message SyntaxError initPos $ pack $ show' e])
+  where
+    run expr = rawRunExpr initPos (defaultObjects withCSG) expr
+    initPos = SourcePosition 1 1 "raw_expression"
+    show' = showErrorMessages "or" "unknown parse error" "expecting" "unexpected" "end of input" . errorMessages
+    oUndefined e = (OUndefined, [Message SyntaxError initPos $ pack $ show' e])

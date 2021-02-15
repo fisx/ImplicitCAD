@@ -4,18 +4,15 @@
 
 module Graphics.Implicit.Export.Symbolic.Rebound3 (rebound3) where
 
-import Prelude ((-), (+))
-import Graphics.Implicit.Definitions(BoxedObj3, ℝ3)
+import Graphics.Implicit.Definitions (BoxedObj3, ℝ3)
 import Linear ((^/))
+import Prelude ((+), (-))
 
 -- | Slightly stretch the bounding box of an object, in order to
 --   ensure that during mesh generation, there are no problems because
 --   values are right at the edge.
 rebound3 :: BoxedObj3 -> BoxedObj3
-rebound3 (obj, (a,b)) =
-    let
-        d :: ℝ3
-        d = (b - a) ^/ 10
-    in
-        (obj, (a - d, b + d))
-
+rebound3 (obj, (a, b)) =
+  let d :: ℝ3
+      d = (b - a) ^/ 10
+   in (obj, (a - d, b + d))

@@ -6,205 +6,212 @@
    to be accessible to an end user who is compiling objects using
    this haskell library. -}
 
-module Graphics.Implicit (
-  -- * Types
-  W.ℝ,
-  W.ℝ2,
-  W.ℝ3,
-  SymbolicObj2 (),
-  SymbolicObj3 (),
-  W.ExtrudeMScale(C1, C2, Fn),
+module Graphics.Implicit
+  ( -- * Types
+    W.ℝ,
+    W.ℝ2,
+    W.ℝ3,
+    SymbolicObj2 (),
+    SymbolicObj3 (),
+    W.ExtrudeMScale (C1, C2, Fn),
 
-  -- * Shared operations
-  P.Object (),
-  P.translate,
-  P.scale,
-  P.mirror,
-  P.complement,
-  P.union,
-  P.unionR,
-  P.intersect,
-  P.intersectR,
-  P.difference,
-  P.differenceR,
-  P.implicit,
-  P.shell,
-  P.outset,
-  P.emptySpace,
-  P.fullSpace,
-  P.withRounding,
+    -- * Shared operations
+    P.Object (),
+    P.translate,
+    P.scale,
+    P.mirror,
+    P.complement,
+    P.union,
+    P.unionR,
+    P.intersect,
+    P.intersectR,
+    P.difference,
+    P.differenceR,
+    P.implicit,
+    P.shell,
+    P.outset,
+    P.emptySpace,
+    P.fullSpace,
+    P.withRounding,
 
-  -- * 2D primitive shapes
-  P.square,
-  P.rect,
-  P.circle,
-  P.polygon,
+    -- * 2D primitive shapes
+    P.square,
+    P.rect,
+    P.circle,
+    P.polygon,
 
-  -- * 2D operations
-  P.rotate,
-  P.pack2,
+    -- * 2D operations
+    P.rotate,
+    P.pack2,
 
-  -- * 3D primitive shapes
-  P.cube,
-  P.rect3,
-  P.sphere,
-  P.cylinder,
-  P.cylinder2,
+    -- * 3D primitive shapes
+    P.cube,
+    P.rect3,
+    P.sphere,
+    P.cylinder,
+    P.cylinder2,
 
-  -- * 3D operations
-  P.rotate3,
-  P.rotate3V,
-  P.pack3,
+    -- * 3D operations
+    P.rotate3,
+    P.rotate3V,
+    P.pack3,
 
-  -- * Extrusions into 3D
-  P.extrude,
-  P.extrudeM,
-  P.extrudeOnEdgeOf,
-  P.rotateExtrude,
+    -- * Extrusions into 3D
+    P.extrude,
+    P.extrudeM,
+    P.extrudeOnEdgeOf,
+    P.rotateExtrude,
 
-  -- * OpenScad support
-  E.runOpenscad,
+    -- * OpenScad support
+    E.runOpenscad,
 
-  -- * 2D exporters
-  writeSVG,
-  writePNG2,
-  writeDXF2,
-  writeSCAD2,
-  writeGCodeHacklabLaser,
+    -- * 2D exporters
+    writeSVG,
+    writePNG2,
+    writeDXF2,
+    writeSCAD2,
+    writeGCodeHacklabLaser,
 
-  -- * 3D exporters
-  writeSTL,
-  writeBinSTL,
-  writeOBJ,
-  writeTHREEJS,
-  writeSCAD3,
-  writePNG3,
+    -- * 3D exporters
+    writeSTL,
+    writeBinSTL,
+    writeOBJ,
+    writeTHREEJS,
+    writeSCAD3,
+    writePNG3,
 
-  -- * Linear re-exports
-  L.V2(V2),
-  L.V3(V3)
-) where
-
-import Prelude(FilePath, IO)
+    -- * Linear re-exports
+    L.V2 (V2),
+    L.V3 (V3),
+  )
+where
 
 -- The primitive objects, and functions for manipulating them.
 -- MAYBEFIXME: impliment slice operation, regularPolygon and zsurface primitives.
-import Graphics.Implicit.Primitives as P (withRounding, rect, rect3, translate, scale, mirror, complement, union, intersect, difference, unionR, intersectR, differenceR, shell, extrude, extrudeM, extrudeOnEdgeOf, sphere, cube, circle, cylinder, cylinder2, square, polygon, rotateExtrude, rotate3, rotate3V, pack3, rotate, pack2, implicit, fullSpace, emptySpace, outset, Object)
 
 -- The Extended OpenScad interpreter.
-import Graphics.Implicit.ExtOpenScad as E (runOpenscad)
 
 -- typesclasses and types defining the world, or part of the world.
-import Graphics.Implicit.Definitions as W (ℝ, ℝ2, ℝ3, SymbolicObj2, SymbolicObj3, ExtrudeMScale(C1, C2, Fn))
-
+import Graphics.Implicit.Definitions as W (ExtrudeMScale (C1, C2, Fn), SymbolicObj2, SymbolicObj3, ℝ, ℝ2, ℝ3)
 -- Functions for writing files based on the result of operations on primitives.
-import qualified Graphics.Implicit.Export as Export (writeSVG, writeDXF2, writeSTL, writeBinSTL, writeOBJ, writeSCAD2, writeSCAD3, writeTHREEJS, writeGCodeHacklabLaser, writePNG)
-
-import Linear as L (V2(V2), V3(V3), Quaternion(Quaternion))
+import qualified Graphics.Implicit.Export as Export (writeBinSTL, writeDXF2, writeGCodeHacklabLaser, writeOBJ, writePNG, writeSCAD2, writeSCAD3, writeSTL, writeSVG, writeTHREEJS)
+import Graphics.Implicit.ExtOpenScad as E (runOpenscad)
+import Graphics.Implicit.Primitives as P (Object, circle, complement, cube, cylinder, cylinder2, difference, differenceR, emptySpace, extrude, extrudeM, extrudeOnEdgeOf, fullSpace, implicit, intersect, intersectR, mirror, outset, pack2, pack3, polygon, rect, rect3, rotate, rotate3, rotate3V, rotateExtrude, scale, shell, sphere, square, translate, union, unionR, withRounding)
+import Linear as L (Quaternion (Quaternion), V2 (V2), V3 (V3))
+import Prelude (FilePath, IO)
 
 -- We want Export to be a bit less polymorphic
 -- (so that types will collapse nicely)
 
-writeSVG
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-2)/ more time.
-    -> FilePath
-    -> SymbolicObj2
-    -> IO ()
+writeSVG ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-2)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj2 ->
+  IO ()
 writeSVG = Export.writeSVG
 
-writeDXF2
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-2)/ more time.
-    -> FilePath
-    -> SymbolicObj2
-    -> IO ()
+writeDXF2 ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-2)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj2 ->
+  IO ()
 writeDXF2 = Export.writeDXF2
 
-writeSTL
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writeSTL ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writeSTL = Export.writeSTL
 
-writeBinSTL
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writeBinSTL ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writeBinSTL = Export.writeBinSTL
 
-writeOBJ
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writeOBJ ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writeOBJ = Export.writeOBJ
 
-writeSCAD2
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-2)/ more time.
-    -> FilePath
-    -> SymbolicObj2
-    -> IO ()
+writeSCAD2 ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-2)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj2 ->
+  IO ()
 writeSCAD2 = Export.writeSCAD2
 
-writeSCAD3
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writeSCAD3 ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writeSCAD3 = Export.writeSCAD3
 
-writeTHREEJS
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writeTHREEJS ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writeTHREEJS = Export.writeTHREEJS
 
-writeGCodeHacklabLaser
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-2)/ more time.
-    -> FilePath
-    -> SymbolicObj2
-    -> IO ()
+writeGCodeHacklabLaser ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-2)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj2 ->
+  IO ()
 writeGCodeHacklabLaser = Export.writeGCodeHacklabLaser
 
-writePNG2
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-2)/ more time.
-    -> FilePath
-    -> SymbolicObj2
-    -> IO ()
+writePNG2 ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-2)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj2 ->
+  IO ()
 writePNG2 = Export.writePNG
-
 
 -- | Export a PNG of the 'SymbolicObj3'. The projection is with a front-facing
 -- camera, so the coordinate system is @(left to right, front to back, down to
 -- up)@.
-writePNG3
-    :: ℝ  -- ^ Rendering resolution, in millimeters. Smaller values produce
-          -- exports more faithful to the implicit model, at the expense of
-          -- taking /O(n^-3)/ more time.
-    -> FilePath
-    -> SymbolicObj3
-    -> IO ()
+writePNG3 ::
+  -- | Rendering resolution, in millimeters. Smaller values produce
+  -- exports more faithful to the implicit model, at the expense of
+  -- taking /O(n^-3)/ more time.
+  ℝ ->
+  FilePath ->
+  SymbolicObj3 ->
+  IO ()
 writePNG3 = Export.writePNG
-
