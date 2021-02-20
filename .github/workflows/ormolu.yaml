@@ -21,6 +21,8 @@ jobs:
             # that points to /home/runner.)
       - name: Install dependencies
         run: |
+          ls -alF ~/.cabal/bin/
+          ls -alF ~/.local/bin/
           export PATH=$PATH:$HOME/.cabal/bin:$HOME/.local/bin
           export ORMOLU_VERSION=$(cat ./layout/ormolu.version)
           (ormolu -v 2>/dev/null | grep -q $ORMOLU_VERSION) || (cabal update && cabal install ormolu --constraint="ormolu ==$ORMOLU_VERSION")
