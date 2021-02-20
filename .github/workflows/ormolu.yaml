@@ -17,8 +17,7 @@ jobs:
             /home/runner/.local/bin
             /home/runner/.cabal/bin
             # (I'm sure there is an environment variable somewhere
-            # that contains /home/runner, but I'm don't have time to
-            # go and find it.)
+            # that points to /home/runner.)
       - name: Install dependencies
         run: |
           export PATH=$PATH:$HOME/.cabal/bin:$HOME/.local/bin
