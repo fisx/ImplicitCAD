@@ -9,13 +9,14 @@ jobs:
           cabal-version: "${{ matrix.cabal }}"
           enable-stack: false
           ghc-version: "${{ matrix.ghc }}"
-      - uses: "actions/cache@v2"
+      - name: Cache
+        uses: "actions/cache@v2"
         with:
           key: "${{ runner.os }}-${{ matrix.ghc }}-cabal"
           path: |
+            ~/.local/bin
+            ~/.cabal/bin
             "${{ steps.setup-haskell-cabal.outputs.cabal-store }}"
-            /home/runner/.local/bin
-            /home/runner/.cabal/bin
             # (I'm sure there is an environment variable somewhere
             # that points to /home/runner.)
       - name: Install dependencies
