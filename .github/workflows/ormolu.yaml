@@ -24,12 +24,11 @@ jobs:
         shell: bash
       - name: ormolu
         run: |
+          export PATH=$PATH:$HOME/.cabal/bin:$HOME/.local/bin
           echo $PATH
           ls -al $HOME/.cabal/bin/
           pwd
           echo ./layout/ormolu.sh -c
-        env:
-          PATH: $PATH:$HOME/.cabal/bin:$HOME/.local/bin
         shell: bash
     strategy:
       matrix:
