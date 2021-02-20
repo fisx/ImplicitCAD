@@ -26,11 +26,6 @@ jobs:
       - name: ormolu
         run: |
           export PATH=$PATH:$HOME/.cabal/bin:$HOME/.local/bin
-          echo $PATH
-          ls -al $HOME/.cabal/bin/
-          ls -al $HOME/.local/bin/
-          pwd
-          cat ./layout/ormolu.sh -c
           ./layout/ormolu.sh -c
         shell: bash
     strategy:
