@@ -112,7 +112,7 @@ writeSVG ::
   SymbolicObj2 ->
   IO ()
 writeSVG =
-  Export.writeSVG
+     Export.writeSVG
 
 writeDXF2 ::
   -- | Rendering resolution, in millimeters. Smaller values produce
