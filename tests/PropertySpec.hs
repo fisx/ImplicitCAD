@@ -1,11 +1,12 @@
 module PropertySpec
-  ( propSpec
-  ) where
+  ( propSpec,
+  )
+where
 
+import PropertySpec.Exec (additionSpec, divisionSpec, multiplicationSpec, subtractionSpec)
 import Test.Hspec (Spec)
-import PropertySpec.Exec (additionSpec, subtractionSpec, multiplicationSpec, divisionSpec)
 
-propSpec :: Spec 
+propSpec :: Spec
 propSpec = do
   additionSpec
   subtractionSpec

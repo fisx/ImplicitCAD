@@ -1,31 +1,49 @@
 module PropertySpec.Exec
-  ( additionSpec
-  , subtractionSpec
-  , multiplicationSpec
-  , divisionSpec
-  )where
+  ( additionSpec,
+    subtractionSpec,
+    multiplicationSpec,
+    divisionSpec,
+  )
+where
 
-import           Data.Foldable                               (fold, foldl1)
-import           Data.List.NonEmpty                          (intersperse)
-import           ExecSpec.Util                               (num)
-import           Graphics.Implicit.ExtOpenScad.Definitions   (OVal (ONum))
-import           Graphics.Implicit.ExtOpenScad.Eval.Constant (runExpr)
-import           HaskellWorks.Hspec.Hedgehog                 (requireProperty)
-import           Hedgehog                                    (diff, forAll)
-import qualified Hedgehog.Gen                                as Gen
-import qualified Hedgehog.Range                              as Range
-import           Prelude                                     (Bool (False), Floating, String, Double, Show,
-                                                              Eq, Ord, fail, show,
-                                                              ($), (&&), (+),
-                                                              (.), (<$>), (<=), (*), (/),
-                                                              (<>), (>=), (-))
-import           Test.Hspec                                  (Spec, it)
+import Data.Foldable (fold, foldl1)
+import Data.List.NonEmpty (intersperse)
+import ExecSpec.Util (num)
+import Graphics.Implicit.ExtOpenScad.Definitions (OVal (ONum))
+import Graphics.Implicit.ExtOpenScad.Eval.Constant (runExpr)
+import HaskellWorks.Hspec.Hedgehog (requireProperty)
+import Hedgehog (diff, forAll)
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
+import Test.Hspec (Spec, it)
+import Prelude
+  ( Bool (False),
+    Double,
+    Eq,
+    Floating,
+    Ord,
+    Show,
+    String,
+    fail,
+    show,
+    ($),
+    (&&),
+    (*),
+    (+),
+    (-),
+    (.),
+    (/),
+    (<$>),
+    (<=),
+    (<>),
+    (>=),
+  )
 
 approx :: (Floating a, Ord a) => a -> a -> a -> Bool
 approx z a b = a + z >= b && a <= b + z
 
 data Op = Add | Sub | Mul | Div
-  deriving Eq
+  deriving (Eq)
 
 instance Show Op where
   show Add = "+"
@@ -33,7 +51,7 @@ instance Show Op where
   show Mul = "*"
   show Div = "/"
 
-opName :: Op -> String 
+opName :: Op -> String
 opName Add = "addition"
 opName Sub = "subttraction"
 opName Mul = "multiplication"
@@ -54,7 +72,7 @@ mathsSpec o =
         n = foldl1 (fromOp o) l
     case (runExpr e False, num n) of
       ((ONum a, []), ONum b) -> diff a (approx 0.000001) b -- Some value to supress floating point inaccuracies
-      (a, _)                 -> fail $ "Unexpected result value " <> show a
+      (a, _) -> fail $ "Unexpected result value " <> show a
 
 additionSpec :: Spec
 additionSpec = mathsSpec Add

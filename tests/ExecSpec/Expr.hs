@@ -5,16 +5,16 @@
 module ExecSpec.Expr (exprExec) where
 
 -- Be explicit about what we import.
-import Prelude (($))
 
 -- Hspec, for writing specs.
-import Test.Hspec (describe, Spec, it)
 
 -- The type used for variables, in ImplicitCAD.
-import Graphics.Implicit.Definitions (ℝ)
 
 -- Our utility library, for making these tests easier to read.
-import ExecSpec.Util ((-->), num)
+import ExecSpec.Util (num, (-->))
+import Graphics.Implicit.Definitions (ℝ)
+import Test.Hspec (Spec, describe, it)
+import Prelude (($))
 
 -- Default all numbers in this file to being of the type ImplicitCAD uses for values.
 default (ℝ)

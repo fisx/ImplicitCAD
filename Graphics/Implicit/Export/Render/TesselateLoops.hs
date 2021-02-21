@@ -4,26 +4,18 @@
 
 module Graphics.Implicit.Export.Render.TesselateLoops (tesselateLoop) where
 
-import Prelude(sum, (-), pure, ($), length, (==), zip, init, tail, reverse, (<), (/), null, (<>), head, (*), abs, (>), (&&), (+), foldMap)
-
-import Graphics.Implicit.Definitions (ℝ, ℕ, Obj3, ℝ3, TriangleMesh(TriangleMesh), Triangle(Triangle))
-
-import Graphics.Implicit.Export.Render.Definitions (TriSquare(Tris))
-
-import Graphics.Implicit.Export.Util (centroid)
-
 import Data.List (genericLength)
-import Linear ( cross, Metric(norm), (^*), (^/) )
+import Graphics.Implicit.Definitions (Obj3, Triangle (Triangle), TriangleMesh (TriangleMesh), ℕ, ℝ, ℝ3)
+import Graphics.Implicit.Export.Render.Definitions (TriSquare (Tris))
+import Graphics.Implicit.Export.Util (centroid)
+import Linear (Metric (norm), cross, (^*), (^/))
+import Prelude (abs, foldMap, head, init, length, null, pure, reverse, sum, tail, zip, ($), (&&), (*), (+), (-), (/), (<), (<>), (==), (>))
 
 -- de-compose a loop into a series of triangles or squares.
 -- FIXME: res should be ℝ3.
 tesselateLoop :: ℝ -> Obj3 -> [[ℝ3]] -> [TriSquare]
-
 tesselateLoop _ _ [] = []
-
-tesselateLoop _ _ [[a,b],[_,c],[_,_]] = [Tris $ TriangleMesh [Triangle (a,b,c)]]
-
-
+tesselateLoop _ _ [[a, b], [_, c], [_, _]] = [Tris $ TriangleMesh [Triangle (a, b, c)]]
 {-
    #____#     #____#
    |    |     |    |
@@ -32,15 +24,20 @@ tesselateLoop _ _ [[a,b],[_,c],[_,_]] = [Tris $ TriangleMesh [Triangle (a,b,c)]]
    #____#     #____#
 -}
 
-tesselateLoop res obj [[_,_], as@(_:_:_:_),[_,_], bs@(_:_:_:_)] | length as == length bs =
-    foldMap (tesselateLoop res obj)
-        [[[a1,b1],[b1,b2],[b2,a2],[a2,a1]] | ((a1,b1),(a2,b2)) <- zip (init pairs) (tail pairs)]
-            where pairs = zip (reverse as) bs
-
-tesselateLoop res obj [as@(_:_:_:_),[_,_], bs@(_:_:_:_), [_,_] ] | length as == length bs =
-    foldMap (tesselateLoop res obj)
-        [[[a1,b1],[b1,b2],[b2,a2],[a2,a1]] | ((a1,b1),(a2,b2)) <- zip (init pairs) (tail pairs)]
-            where pairs = zip (reverse as) bs
+tesselateLoop res obj [[_, _], as@(_ : _ : _ : _), [_, _], bs@(_ : _ : _ : _)]
+  | length as == length bs =
+    foldMap
+      (tesselateLoop res obj)
+      [[[a1, b1], [b1, b2], [b2, a2], [a2, a1]] | ((a1, b1), (a2, b2)) <- zip (init pairs) (tail pairs)]
+  where
+    pairs = zip (reverse as) bs
+tesselateLoop res obj [as@(_ : _ : _ : _), [_, _], bs@(_ : _ : _ : _), [_, _]]
+  | length as == length bs =
+    foldMap
+      (tesselateLoop res obj)
+      [[[a1, b1], [b1, b2], [b2, a2], [a2, a1]] | ((a1, b1), (a2, b2)) <- zip (init pairs) (tail pairs)]
+  where
+    pairs = zip (reverse as) bs
 
 {-
    #__#
@@ -64,51 +61,48 @@ tesselateLoop _ _ [[a,_],[b,_],[c,_],[d,_]] | centroid [a,c] == centroid [b,d] =
    |  |  ->  | /|
    #__#      #/_#
 -}
--- | Create a pair of triangles from a quad.
--- FIXME: magic number
-tesselateLoop res obj [[a,_],[b,_],[c,_],[d,_]] | obj (centroid [a,c]) < res/30 =
-    pure $ Tris $ TriangleMesh [Triangle (a,b,c), Triangle (a,c,d)]
 
+tesselateLoop res obj [[a, _], [b, _], [c, _], [d, _]]
+  | obj (centroid [a, c]) < res / 30 =
+    pure $ Tris $ TriangleMesh [Triangle (a, b, c), Triangle (a, c, d)]
 -- Fallback case: make fans
 
 -- FIXME: magic numbers.
-tesselateLoop res obj pathSides = pure $ Tris $ TriangleMesh $
-    let
-        path' = foldMap init pathSides
-        (early_tris,path) = shrinkLoop 0 path' res obj
-    in if null path
-    then early_tris
-    else let
-        mid = centroid path
-        midval = obj mid
-        preNormal = sum
-            [ a `cross` b | (a,b) <- zip path (tail path <> [head path]) ]
-        preNormalNorm = norm preNormal
-        normal = preNormal ^/ preNormalNorm
-        deriv = (obj (mid + (normal ^* (res/100)) ) - midval)/res*100
-        mid' = mid - normal ^* (midval/deriv)
-    in if abs midval > res/50 && preNormalNorm > 0.5 && abs deriv > 0.5
-              && abs (midval/deriv) < 2*res && 3*abs (obj mid') < abs midval
-        then early_tris <> [Triangle (a,b,mid') | (a,b) <- zip path (tail path <> [head path]) ]
-        else early_tris <> [Triangle (a,b,mid) | (a,b) <- zip path (tail path <> [head path]) ]
-
+tesselateLoop res obj pathSides =
+  pure $
+    Tris $
+      TriangleMesh $
+        let path' = foldMap init pathSides
+            (early_tris, path) = shrinkLoop 0 path' res obj
+         in if null path
+              then early_tris
+              else
+                let mid = centroid path
+                    midval = obj mid
+                    preNormal =
+                      sum
+                        [a `cross` b | (a, b) <- zip path (tail path <> [head path])]
+                    preNormalNorm = norm preNormal
+                    normal = preNormal ^/ preNormalNorm
+                    deriv = (obj (mid + (normal ^* (res / 100))) - midval) / res * 100
+                    mid' = mid - normal ^* (midval / deriv)
+                 in if abs midval > res / 50 && preNormalNorm > 0.5 && abs deriv > 0.5
+                      && abs (midval / deriv) < 2 * res
+                      && 3 * abs (obj mid') < abs midval
+                      then early_tris <> [Triangle (a, b, mid') | (a, b) <- zip path (tail path <> [head path])]
+                      else early_tris <> [Triangle (a, b, mid) | (a, b) <- zip path (tail path <> [head path])]
 
 shrinkLoop :: ℕ -> [ℝ3] -> ℝ -> Obj3 -> ([Triangle], [ℝ3])
-
-shrinkLoop _ path@[a,b,c] res obj =
-    if   abs (obj $ centroid [a,b,c]) < res/50
-    then
-        ( [Triangle (a,b,c)], [])
-    else
-        ([], path)
-
+shrinkLoop _ path@[a, b, c] res obj =
+  if abs (obj $ centroid [a, b, c]) < res / 50
+    then ([Triangle (a, b, c)], [])
+    else ([], path)
 -- FIXME: magic number.
-shrinkLoop n path@(a:b:c:xs) res obj | n < genericLength path =
-    if abs (obj (centroid [a,c])) < res/50
-    then
-        let (tris,remainder) = shrinkLoop 0 (a:c:xs) res obj
-        in (Triangle (a,b,c):tris, remainder)
-    else
-        shrinkLoop (n+1) (b:c:xs <> [a]) res obj
-
-shrinkLoop _ path _ _ = ([],path)
+shrinkLoop n path@(a : b : c : xs) res obj
+  | n < genericLength path =
+    if abs (obj (centroid [a, c])) < res / 50
+      then
+        let (tris, remainder) = shrinkLoop 0 (a : c : xs) res obj
+         in (Triangle (a, b, c) : tris, remainder)
+      else shrinkLoop (n + 1) (b : c : xs <> [a]) res obj
+shrinkLoop _ path _ _ = ([], path)
